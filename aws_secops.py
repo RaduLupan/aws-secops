@@ -12,8 +12,8 @@ def evaluate_s3_public_access (bucket_name):
     
     s3 = boto3.client('s3')
 
-    public_acl=True
-    public_policy = False
+    public_acl=None
+    public_policy = None
     bucket_properties = {'Name':bucket_name, 'Grants':'Some grants'}
     
     # Get bucket ACL.
@@ -29,6 +29,9 @@ def evaluate_s3_public_access (bucket_name):
             if grant['Grantee']['Type'] == 'Group':
                 if (grant['Grantee']['URI'] == 'http://acs.amazonaws.com/groups/global/AllUsers') or (grant['Grantee']['URI'] == 'http://acs.amazonaws.com/groups/global/AuthenticatedUsers') :
                     public_acl = True
+            # if grant['Grantee']['Type'] is not 'Group' the bucket is not public by ACL.
+            else:
+                public_acl = False
 
     except botocore.exceptions.ClientError as e:
         print("Unexpected error: %s" % (e.response))
