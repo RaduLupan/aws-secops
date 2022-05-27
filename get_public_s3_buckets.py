@@ -25,6 +25,8 @@ def main():
     # List of dictionaries.
     public_buckets = [] 
 
+    public_buckets_report = []
+
     # Get the service client.
     s3 = boto3.client('s3')
     response = s3.list_buckets()
@@ -33,6 +35,12 @@ def main():
         bucket_properties=aws_secops.evaluate_s3_public_access (bucket_name=bucket['Name'])
         if bucket_properties['PublicACL'] or bucket_properties['PublicPolicy']:
             public_buckets.append(bucket_properties)
+            
+            # Serialize each bucket_properties into public_bucket_report.
+            public_bucket_report=json.dumps(bucket_properties)
+            
+            # Append all public_bucket_report to the public_buckets_report list.
+            public_buckets_report.append(public_bucket_report)
 
     if len(public_buckets) == 0:
         print("No public buckets detected. That's actually great!")
@@ -48,9 +56,7 @@ def main():
         # Create new sheet in the existing spreadsheet.
         gsheets_api.create_sheet(creds=creds, title='S3 Public Buckets', spreadsheet_id=sample_spreadsheet_id)
 
-        public_buckets_report = json.dumps(public_buckets)
-
-        # Append values contained in rows (row by row) to newly created sheet.
+        # Append values contained in public_buckets_report list to newly created sheet.
         result = gsheets_api.append_values(creds, sample_spreadsheet_id, "S3 Public Buckets!A2:C3", "USER_ENTERED",
             [
                 public_buckets_report
