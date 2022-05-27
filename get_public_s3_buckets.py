@@ -23,11 +23,7 @@ def main():
     bucket_properties = dict()
     
     # List of dictionaries.
-    public_buckets = []
-
-    # List of rows to append to Google Sheet.
-    public_buckets_report =[]
-    row = []
+    public_buckets = [] 
 
     # Get the service client.
     s3 = boto3.client('s3')
@@ -43,12 +39,6 @@ def main():
     else:
         print(f'The list of public buckets is below:\n {public_buckets}')
 
-        for bucket in public_buckets:
-            
-            row.append(bucket['Name'])
-            row.append(json.dumps(bucket['Grants'][0]))
-            row.append(json.dumps(bucket['Owner']))
-
         # Credentials for Google Sheets API.
         creds = gsheets_api.ServiceAccountCredentials.from_json_keyfile_name(
         service_account_file,
@@ -58,16 +48,14 @@ def main():
         # Create new sheet in the existing spreadsheet.
         gsheets_api.create_sheet(creds=creds, title='S3 Public Buckets', spreadsheet_id=sample_spreadsheet_id)
 
-        # Update newly created sheet with data from a list.
-        headers=['Name', 'Grants', 'Owner', 'PolicyStatus', 'PublicACL']
-        gsheets_api.update_sheet(creds, title = 'S3 Public Buckets', spreadsheet_id=sample_spreadsheet_id, data=headers)
+        public_buckets_report = json.dumps(public_buckets)
 
-        # Append values to newly created sheet.
+        # Append values contained in rows (row by row) to newly created sheet.
         result = gsheets_api.append_values(creds, sample_spreadsheet_id, "S3 Public Buckets!A2:C3", "USER_ENTERED",
-             [
-                 row
+            [
+                public_buckets_report
             ])
         print(result)
-
+        
 if __name__ == '__main__':
     main()
