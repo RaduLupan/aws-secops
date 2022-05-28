@@ -54,29 +54,39 @@ def get_values(creds, spreadsheet_id, range, major_dimension):
         print(f"An error occurred: {error}")
         return error
 
-def append_values(creds, spreadsheet_id, range_name, value_input_option,
-                  _values):
+def append_values(creds, spreadsheet_id, range, insert_data_option, data):
+    '''
+    Description: Appends values to a spreadsheet. The input range is used to search for existing data and find a "table" within that range. 
+    Values will be appended to the next row of the table, starting with the first column of the table.
+    Parameters: 
+    - creds: Credentials for a service account. The service account used must have have Editor access to the spreadsheet.
+    - spreadsheet_id: the ID of the spreadsheet that contains a sheet to append values to.
+    - range: The A1 notation of a range to search for a logical table of data. Values will be appended after the last row of the table.
+    - insert_data_option: Determines how existing data is changed when new data is input. Accepted values:  'OVERWRITE' or 'INSERT_ROWS'.
+    - data: a list of rows(lists) to be appended.
+    Method: spreadsheets.values.get
+    HTTP Request: POST https://sheets.googleapis.com/v4/spreadsheets/{spreadsheetId}/values/{range}:append
+    Documentation: https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets.values/append
+    '''
+    
+    # How the input data should be interpreted. Accepted values: 'USER_ENTERED', 'RAW'.
+    # https://developers.google.com/sheets/api/reference/rest/v4/ValueInputOption
+    value_input_option = 'USER_ENTERED'  
+
+    value_range_body = {"values":data, "majorDimension": "ROWS"}
+
     try:
         service = build('sheets', 'v4', credentials=creds)
 
-        values = [
-            [
-                # Cell values ...
-            ],
-            # Additional rows ...
-        ]
-        # [START_EXCLUDE silent]
-        values = _values
-        # [END_EXCLUDE]
-        body = {
-            'values': values
-        }
-        result = service.spreadsheets().values().append(
-            spreadsheetId=spreadsheet_id, range=range_name,
-            valueInputOption=value_input_option, body=body).execute()
-        print(f"{(result.get('updates').get('updatedCells'))} cells appended.")
-        return result
+        request = service.spreadsheets().values().append(
+            spreadsheetId=spreadsheet_id, 
+            range=range, 
+            valueInputOption=value_input_option,
+            insertDataOption=insert_data_option, 
+            body=value_range_body)
+        response = request.execute()
 
+        print(response)
     except HttpError as error:
         print(f"An error occurred: {error}")
         return error
