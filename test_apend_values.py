@@ -22,7 +22,6 @@ data.append(['Pamela Brown', 'Amazon', '456 Pamela Street'])
 gsheets_api.append_values(creds=creds,
                           spreadsheet_id=sample_spreadsheet_id,
                           range=sample_range_name,
-                          major_dimension='ROWS',
                           insert_data_option='OVERWRITE',
                           data=data
 )
