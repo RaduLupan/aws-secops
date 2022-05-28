@@ -25,6 +25,7 @@ def main():
     # List of dictionaries.
     public_buckets = [] 
 
+    public_bucket_report = [] 
     public_buckets_report = []
 
     # Get the service client.
@@ -36,10 +37,10 @@ def main():
         if bucket_properties['PublicACL'] or bucket_properties['PublicPolicy']:
             public_buckets.append(bucket_properties)
             
-            # Serialize each bucket_properties into public_bucket_report.
-            public_bucket_report=json.dumps(bucket_properties)
+            # Serialize each bucket_properties and append to public_bucket_report list.
+            public_bucket_report.append(json.dumps(bucket_properties))
             
-            # Append all public_bucket_report to the public_buckets_report list.
+            # Append all public_bucket_report lists to the public_buckets_report list.
             public_buckets_report.append(public_bucket_report)
 
     if len(public_buckets) == 0:
@@ -56,12 +57,13 @@ def main():
         # Create new sheet in the existing spreadsheet.
         gsheets_api.create_sheet(creds=creds, title='S3 Public Buckets', spreadsheet_id=sample_spreadsheet_id)
 
-        # Append values contained in public_buckets_report list to newly created sheet.
-        result = gsheets_api.append_values(creds, sample_spreadsheet_id, "S3 Public Buckets!A2:C3", "USER_ENTERED",
-            [
-                public_buckets_report
-            ])
-        print(result)
+        # Append values contained in public_buckets_report list to newly created sheet after A1 row.
+        gsheets_api.append_values(creds=creds,
+                          spreadsheet_id=sample_spreadsheet_id,
+                          range="S3 Public Buckets!A1",
+                          insert_data_option='OVERWRITE',
+                          data=public_buckets_report
+        )
         
 if __name__ == '__main__':
     main()
