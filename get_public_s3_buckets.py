@@ -37,8 +37,8 @@ def main():
         if bucket_properties['PublicACL'] or bucket_properties['PublicPolicy']:
             public_buckets.append(bucket_properties)
             
-            # Serialize each bucket_properties and append to public_bucket_report list.
-            public_bucket_report.append(json.dumps(bucket_properties))
+            # Serialize each bucket_properties and convert to list.
+            public_bucket_report = [json.dumps(bucket_properties)]
             
             # Append all public_bucket_report lists to the public_buckets_report list.
             public_buckets_report.append(public_bucket_report)
@@ -57,7 +57,7 @@ def main():
         # Create new sheet in the existing spreadsheet.
         gsheets_api.create_sheet(creds=creds, title='S3 Public Buckets', spreadsheet_id=sample_spreadsheet_id)
 
-        # Append values contained in public_buckets_report list to newly created sheet after A1 row.
+        # Append values contained in public_buckets_report list to newly created sheet at A1 row.
         gsheets_api.append_values(creds=creds,
                           spreadsheet_id=sample_spreadsheet_id,
                           range="S3 Public Buckets!A1",
