@@ -13,6 +13,8 @@ import boto3
 
 import json
 
+from datetime import datetime
+
 def main():
     
     # Local values required for accessing Google Sheets API as a service account. Could be read from SSM Parameter Store instead.
@@ -27,6 +29,10 @@ def main():
 
     public_bucket_report = [] 
     public_buckets_report = []
+
+    now=datetime.now()
+    # See the Python strftime cheatsheet https://strftime.org/ for more formatting options.
+    now_str=now.strftime("%Y-%m-%d At %H:%M:%S")
 
     # Get the service client.
     s3 = boto3.client('s3')
@@ -56,11 +62,14 @@ def main():
 
         # Create new sheet in the existing spreadsheet.
         gsheets_api.create_sheet(creds=creds, title='S3 Public Buckets', spreadsheet_id=sample_spreadsheet_id)
-
-        # Append values contained in public_buckets_report list to newly created sheet at A1 row.
+        
+        sheet_header=[f'S3 Public Buckets Report - Created on {now_str}']
+        gsheets_api.update_sheet(creds, title = 'S3 Public Buckets', spreadsheet_id=sample_spreadsheet_id, data=sheet_header)
+        
+        # Append values contained in public_buckets_report list to newly created sheet at A2 row.
         gsheets_api.append_values(creds=creds,
                           spreadsheet_id=sample_spreadsheet_id,
-                          range="S3 Public Buckets!A1",
+                          range="S3 Public Buckets!A2",
                           insert_data_option='OVERWRITE',
                           data=public_buckets_report
         )
