@@ -27,8 +27,11 @@ def main():
     # List of dictionaries.
     public_buckets = [] 
 
-    public_bucket_report = [] 
-    public_buckets_report = []
+    public_bucket_report_raw = [] 
+    public_bucket_report_normalized = []
+
+    public_buckets_report_raw = []
+    public_buckets_report_normalized = []
 
     now=datetime.now()
     # See the Python strftime cheatsheet https://strftime.org/ for more formatting options.
@@ -44,10 +47,18 @@ def main():
             public_buckets.append(bucket_properties)
             
             # Serialize each bucket_properties and convert to list.
-            public_bucket_report = [json.dumps(bucket_properties)]
+            public_bucket_report_raw = [json.dumps(bucket_properties)]
+            public_bucket_report_normalized = [
+                bucket_properties['Name'],
+                bucket_properties['PublicACL'],
+                bucket_properties['PublicPolicy'],
+                json.dumps(bucket_properties['Owner']),
+                json.dumps(bucket_properties['Grants'])
+            ]
             
             # Append all public_bucket_report lists to the public_buckets_report list.
-            public_buckets_report.append(public_bucket_report)
+            public_buckets_report_raw.append(public_bucket_report_raw)
+            public_buckets_report_normalized.append(public_bucket_report_normalized)
 
     if len(public_buckets) == 0:
         print("No public buckets detected. That's actually great!")
@@ -60,19 +71,43 @@ def main():
         scopes,
         )
 
-        # Create new sheet in the existing spreadsheet.
-        gsheets_api.create_sheet(creds=creds, title='S3 Public Buckets', spreadsheet_id=sample_spreadsheet_id)
+        # Create new sheets for raw and normalized reports in the existing spreadsheet.
+        gsheets_api.create_sheet(creds=creds, title='S3 Public Buckets-RAW', spreadsheet_id=sample_spreadsheet_id)
+        gsheets_api.create_sheet(creds=creds, title='S3 Public Buckets-NORMALIZED', spreadsheet_id=sample_spreadsheet_id)
         
-        sheet_header=[f'S3 Public Buckets Report - Created on {now_str}']
-        gsheets_api.update_sheet(creds, title = 'S3 Public Buckets', spreadsheet_id=sample_spreadsheet_id, data=sheet_header)
+       
+        datetime_stamp=[f'S3 Public Buckets Report - Created on {now_str}']
+
+        # Add a datetime stamp on both sheets. 
+        gsheets_api.update_sheet(creds, title = 'S3 Public Buckets-RAW', spreadsheet_id=sample_spreadsheet_id, data=datetime_stamp)
+        gsheets_api.update_sheet(creds, title = 'S3 Public Buckets-NORMALIZED', spreadsheet_id=sample_spreadsheet_id, data=datetime_stamp)
         
-        # Append values contained in public_buckets_report list to newly created sheet at A2 row.
+        sheet_header_normalized=['BucketName', 'PublicACL', 'PublicPolicy', 'Owner', 'Grants']
+
+        # Append sheet header to normalized report.
         gsheets_api.append_values(creds=creds,
                           spreadsheet_id=sample_spreadsheet_id,
-                          range="S3 Public Buckets!A2",
+                          range="S3 Public Buckets-NORMALIZED!A2",
                           insert_data_option='OVERWRITE',
-                          data=public_buckets_report
+                          data=sheet_header_normalized
         )
+        
+        # Append values contained in public_buckets_report_normalized list to the normalized sheet at A3 row.
+        gsheets_api.append_values(creds=creds,
+                          spreadsheet_id=sample_spreadsheet_id,
+                          range="S3 Public Buckets-NORMALIZED!A3",
+                          insert_data_option='OVERWRITE',
+                          data=public_buckets_report_normalized
+        )
+
+        # Append values contained in public_buckets_report_raw list to the raw sheet at A2 row.
+        gsheets_api.append_values(creds=creds,
+                          spreadsheet_id=sample_spreadsheet_id,
+                          range="S3 Public Buckets-RAW!A2",
+                          insert_data_option='OVERWRITE',
+                          data=public_buckets_report_raw
+        )
+
         
 if __name__ == '__main__':
     main()
