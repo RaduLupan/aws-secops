@@ -1,10 +1,10 @@
 '''
----------------------------------------------------------------------------------------------
-Description: This script loops through all the S3 buckets in an AWS account and determines if 
-public access is granted by either ACL or bucket policy.
-The public buckets are listed in a Google Sheet.
-Parameters: 
-----------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------
+Description: 
+This script loops through all the S3 buckets in an AWS account and determines if public access
+is granted by either ACL or bucket policy.
+The public buckets are listed in a Google Sheet as serialized dictionaries.
+-------------------------------------------------------------------------------------------------
 '''
 
 import gsheets_api
