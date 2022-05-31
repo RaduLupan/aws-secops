@@ -78,11 +78,15 @@ def main():
        
         datetime_stamp=[f'S3 Public Buckets Report - Created on {now_str}']
 
+        rows=['First row','Second row']
+
         # Add a datetime stamp on both sheets. 
         gsheets_api.update_sheet(creds, title = 'S3 Public Buckets-RAW', spreadsheet_id=sample_spreadsheet_id, data=datetime_stamp)
         gsheets_api.update_sheet(creds, title = 'S3 Public Buckets-NORMALIZED', spreadsheet_id=sample_spreadsheet_id, data=datetime_stamp)
-        
-        sheet_header_normalized=['BucketName', 'PublicACL', 'PublicPolicy', 'Owner', 'Grants']
+        # gsheets_api.update_sheet(creds, title = 'S3 Public Buckets-NORMALIZED', spreadsheet_id=sample_spreadsheet_id, data=rows)
+
+        # Data to be appended by append_values is a list of lists (rows).
+        sheet_header_normalized=[['BucketName', 'PublicACL', 'PublicPolicy', 'Owner', 'Grants']]
 
         # Append sheet header to normalized report.
         gsheets_api.append_values(creds=creds,
@@ -99,7 +103,7 @@ def main():
                           insert_data_option='OVERWRITE',
                           data=public_buckets_report_normalized
         )
-
+        
         # Append values contained in public_buckets_report_raw list to the raw sheet at A2 row.
         gsheets_api.append_values(creds=creds,
                           spreadsheet_id=sample_spreadsheet_id,
