@@ -59,7 +59,7 @@ def evaluate_s3_public_access (bucket_name):
 
     return bucket_properties
 
-def serialize_public_bucket_properties(bucket_properties, mode):
+def serialize_bucket_properties(bucket_properties, mode):
     '''
     Description: Uses json module to serialize a public_bucket_properties dictionary so they can be printed.
     Parameters:
