@@ -11,7 +11,10 @@ from botocore.exceptions import ClientError
 import json
 
 def evaluate_s3_public_access (bucket_name):
-    
+    '''
+    TO-DO:
+    - Documentation.
+    '''
     s3 = boto3.client('s3')
 
     public_acl=None
@@ -67,6 +70,9 @@ def serialize_bucket_properties(bucket_properties, mode):
     - mode: string with accepted values 'RAW' or 'NORMALIZED'. 
         If mode = 'RAW' the whole bucket_properties dictionary is serialized to a flat string.
         If mode = 'NORMALIZED' the bucket's Name, PublicACL and PublicPolicy attributes are extracted and the Owner and Grants dictionaries are serialized. 
+    TO-DO:
+    1. Introduce parameter validation for mode so that only RAW and NORMALIZED are accepted.
+    2. Replace the double if with switch?
     '''
 
     serialized_bucket_properties = []
