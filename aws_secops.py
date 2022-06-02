@@ -71,22 +71,22 @@ def serialize_bucket_properties(bucket_properties, mode):
         If mode = 'RAW' the whole bucket_properties dictionary is serialized to a flat string.
         If mode = 'NORMALIZED' the bucket's Name, PublicACL and PublicPolicy attributes are extracted and the Owner and Grants dictionaries are serialized. 
     TO-DO:
-    1. Introduce parameter validation for mode so that only RAW and NORMALIZED are accepted.
-    2. Replace the double if with switch?
+    -Introduce parameter validation for mode so that only RAW and NORMALIZED are accepted.
     '''
 
     serialized_bucket_properties = []
 
-    if mode == 'RAW':
-        serialized_bucket_properties = [json.dumps(bucket_properties)]
+    match mode:
+        case 'RAW':
+            serialized_bucket_properties = [json.dumps(bucket_properties)]
     
-    if mode == 'NORMALIZED':
-        serialized_bucket_properties = [
+        case 'NORMALIZED':
+            serialized_bucket_properties = [
                 bucket_properties['Name'],
                 bucket_properties['PublicACL'],
                 bucket_properties['PublicPolicy'],
                 json.dumps(bucket_properties['Owner']),
                 json.dumps(bucket_properties['Grants'])
-        ]
-    
+            ]
+
     return serialized_bucket_properties
