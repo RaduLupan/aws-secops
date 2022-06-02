@@ -8,6 +8,8 @@ import boto3
 import botocore.session
 from botocore.exceptions import ClientError
 
+import json
+
 def evaluate_s3_public_access (bucket_name):
     
     s3 = boto3.client('s3')
@@ -57,12 +59,28 @@ def evaluate_s3_public_access (bucket_name):
 
     return bucket_properties
 
-def serialize_public_bucket_properties(public_buckets_properties, mode):
+def serialize_public_bucket_properties(bucket_properties, mode):
     '''
     Description: Uses json module to serialize a public_bucket_properties dictionary so they can be printed.
     Parameters:
-    - public_bucket_properties: Dictionary of dictonaries representing the properties of an S3 bucket returned by the evaluate_s3_public_access(bucket_name) function.
+    - bucket_properties: Dictionary of dictonaries representing the properties of an S3 bucket returned by the evaluate_s3_public_access(bucket_name) function.
     - mode: string with accepted values 'RAW' or 'NORMALIZED'. 
-        If mode = 'RAW' the whole public_bucket_properties dictionary is serialized to a flat string.
+        If mode = 'RAW' the whole bucket_properties dictionary is serialized to a flat string.
         If mode = 'NORMALIZED' the bucket's Name, PublicACL and PublicPolicy attributes are extracted and the Owner and Grants dictionaries are serialized. 
     '''
+
+    serialized_bucket_properties = []
+
+    if mode == 'RAW':
+        serialized_bucket_properties = [json.dumps(bucket_properties)]
+    
+    if mode == 'NORMALIZED':
+        serialized_bucket_properties = [
+                bucket_properties['Name'],
+                bucket_properties['PublicACL'],
+                bucket_properties['PublicPolicy'],
+                json.dumps(bucket_properties['Owner']),
+                json.dumps(bucket_properties['Grants'])
+        ]
+    
+    return serialized_bucket_properties
