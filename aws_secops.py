@@ -12,8 +12,18 @@ import json
 
 def evaluate_s3_public_access (bucket_name):
     '''
-    TO-DO:
-    - Documentation.
+    Description: Returns relevant properties of an S3 bucket that determine whether the bucket is public due to Access Control List (ACL) or bucket policy.
+    Parameters:
+    - bucket_name: the name of the S3 bucket to be evaluated for public access.
+    Examples:
+    # Call the function for the bucket to be evaluated.
+    my_bucket_properties=evaluate_s3_public_access(bucket_name='my-bucket')
+    
+    # Test if the bucket is public due to ACL or bucket policy.
+    if my_bucket_properties['PublicACL'] or my_bucket_properties['PublicPolicy']:
+        print('The bucket my-bucket is public.')
+    else:
+        print('The bucket my-bucket is not public.')
     '''
     s3 = boto3.client('s3')
 
