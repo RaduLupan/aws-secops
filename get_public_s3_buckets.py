@@ -27,12 +27,7 @@ def main():
     # List of dictionaries.
     public_buckets = [] 
 
-    public_bucket_report_raw = [] 
-    public_bucket_report_normalized = []
     public_bucket_report_serialized = []
-
-    public_buckets_report_raw = []
-    public_buckets_report_normalized = []
     public_buckets_report_serialized = []
 
     now=datetime.now()
@@ -49,19 +44,9 @@ def main():
             public_buckets.append(bucket_properties)
             
             # Serialize each bucket_properties and convert to list.
-            public_bucket_report_raw = [json.dumps(bucket_properties)]
-            public_bucket_report_normalized = [
-                bucket_properties['Name'],
-                bucket_properties['PublicACL'],
-                bucket_properties['PublicPolicy'],
-                json.dumps(bucket_properties['Owner']),
-                json.dumps(bucket_properties['Grants'])
-            ]
             public_bucket_report_serialized=aws_secops.serialize_bucket_properties(bucket_properties=bucket_properties, mode='NORMALIZED')
 
-            # Append all public_bucket_report lists to the public_buckets_report list.
-            public_buckets_report_raw.append(public_bucket_report_raw)
-            public_buckets_report_normalized.append(public_bucket_report_normalized)
+            # Append all public_bucket_report_serialized lists to the public_buckets_report_serialized list.
             public_buckets_report_serialized.append(public_bucket_report_serialized)
 
     if len(public_buckets) == 0:
@@ -75,29 +60,18 @@ def main():
         scopes,
         )
 
-        # Create new sheets for raw and normalized reports in the existing spreadsheet.
-        gsheets_api.create_sheet(creds=creds, title='S3 Public Buckets-RAW', spreadsheet_id=sample_spreadsheet_id)
-        gsheets_api.create_sheet(creds=creds, title='S3 Public Buckets-NORMALIZED', spreadsheet_id=sample_spreadsheet_id)
+        # Create new sheet for the serialized report in the existing spreadsheet.
         gsheets_api.create_sheet(creds=creds, title='S3 Public Buckets-SERIALIZED', spreadsheet_id=sample_spreadsheet_id)
        
         datetime_stamp=[f'S3 Public Buckets Report - Created on {now_str}']
 
         # Add a datetime stamp on both sheets. 
-        gsheets_api.update_sheet(creds, title = 'S3 Public Buckets-RAW', spreadsheet_id=sample_spreadsheet_id, data=datetime_stamp)
-        gsheets_api.update_sheet(creds, title = 'S3 Public Buckets-NORMALIZED', spreadsheet_id=sample_spreadsheet_id, data=datetime_stamp)
         gsheets_api.update_sheet(creds, title = 'S3 Public Buckets-SERIALIZED', spreadsheet_id=sample_spreadsheet_id, data=datetime_stamp)
 
         # Data to be appended by append_values is a list of lists (rows).
         sheet_header_normalized=[['BucketName', 'PublicACL', 'PublicPolicy', 'Owner', 'Grants']]
 
-        # Append sheet header to normalized report.
-        gsheets_api.append_values(creds=creds,
-                          spreadsheet_id=sample_spreadsheet_id,
-                          range="S3 Public Buckets-NORMALIZED!A2",
-                          insert_data_option='OVERWRITE',
-                          data=sheet_header_normalized
-        )
-        
+        # Append sheet header to normalized report.        
         gsheets_api.append_values(creds=creds,
                           spreadsheet_id=sample_spreadsheet_id,
                           range="S3 Public Buckets-SERIALIZED!A2",
@@ -105,27 +79,12 @@ def main():
                           data=sheet_header_normalized
         )
         
-        # Append values contained in public_buckets_report_normalized list to the normalized sheet at A3 row.
-        gsheets_api.append_values(creds=creds,
-                          spreadsheet_id=sample_spreadsheet_id,
-                          range="S3 Public Buckets-NORMALIZED!A3",
-                          insert_data_option='OVERWRITE',
-                          data=public_buckets_report_normalized
-        )
-
+        # Append values contained in public_buckets_report_serialized list to the serialized sheet at A3 row.
         gsheets_api.append_values(creds=creds,
                           spreadsheet_id=sample_spreadsheet_id,
                           range="S3 Public Buckets-SERIALIZED!A3",
                           insert_data_option='OVERWRITE',
                           data=public_buckets_report_serialized
-        )
-
-        # Append values contained in public_buckets_report_raw list to the raw sheet at A2 row.
-        gsheets_api.append_values(creds=creds,
-                          spreadsheet_id=sample_spreadsheet_id,
-                          range="S3 Public Buckets-RAW!A2",
-                          insert_data_option='OVERWRITE',
-                          data=public_buckets_report_raw
         )
         
 if __name__ == '__main__':
