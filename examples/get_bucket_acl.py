@@ -1,5 +1,5 @@
 '''
-Example on how to get the ACL of a bucket.
+Example: How to get the ACL of a bucket.
 '''
 import boto3
 

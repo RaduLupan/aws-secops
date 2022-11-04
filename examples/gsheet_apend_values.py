@@ -1,3 +1,6 @@
+'''
+Example: How to append values to Google sheet using service account credentials.
+'''
 import gsheets_api
 
 scopes = ['https://www.googleapis.com/auth/spreadsheets','https://www.googleapis.com/auth/drive']
