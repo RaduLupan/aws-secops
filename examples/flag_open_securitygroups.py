@@ -15,29 +15,40 @@ def flag_remote_access(groupId):
 
     filters=[{'Name': 'group-id', 'Values': [groupId]}]
 
+    print(f"Processing security group: {groupId}")
+    
     try:
         response = ec2.describe_security_group_rules(Filters = filters)
-        
-        offending_ingress_rules = []
 
         all_rules = response['SecurityGroupRules']
-
-        for rule in all_rules:
-            # Only flag ingress rules with CidrIpv4 equal to anywhere.
-            if (rule['IsEgress'] == False) and (rule['CidrIpv4'] == '0.0.0.0/0'):
-        
-                # Flag the rules that allow RDP or SSH access from anywhere.
-                if (rule['FromPort'] == 3389) or (rule['FromPort'] == 22):
-                    print(f"Ingress rule {rule['SecurityGroupRuleId']} opens port {rule['FromPort']} from anywhere!" )
-                    offending_ingress_rules.append(rule)
-
-        return offending_ingress_rules
     
+        offending_ingress_rules = []
+    
+        if all_rules != []:
+
+            for rule in all_rules:
+                # Only flag ingress rules 
+                if rule['IsEgress'] == False:
+                 
+                    print(f"Processing ingress rule: {rule['SecurityGroupRuleId']}")
+                    # with either CidrIpv4 or CidrIpv6 range of anywhere
+                    if (('CidrIpv4' in rule) and (rule['CidrIpv4'] == '0.0.0.0/0')) or (( 'CidrIpv6' in rule) and (rule['CidrIpv6'] == '::/0')):
+        
+                        # that allows RDP or SSH access
+                        if (rule['FromPort'] == 3389) or (rule['FromPort'] == 22):
+                            print(f"Ingress rule {rule['SecurityGroupRuleId']} opens port {rule['FromPort']} from anywhere!" )
+                            offending_ingress_rules.append(rule)
+
+            return offending_ingress_rules
+    
+        elif all_rules == []:
+            print(f"No ingress rules found on security group {groupId}")
+            return []
     except ClientError as err:
         print("Error connecting to the EC2 client: " + err.response['Error']['Code'] + ', Message: ' + str(err))
         return []
 
-sg_id = 'BAD_sg-09d0c55a2a08dcadb'
+sg_id = 'sg-09d0c55a2a08dcadb'
 
 offending_ingress_rules = flag_remote_access(sg_id)
 
