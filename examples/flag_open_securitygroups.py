@@ -48,6 +48,10 @@ def flag_remote_access(groupId):
         print("Error connecting to the EC2 client: " + err.response['Error']['Code'] + ', Message: ' + str(err))
         return []
 
+def secure_remote_access(groupId):
+    '''
+    Description: Modifies the ingress security rules that allow remote access from anywhere by replacing the 0.0.0.0/0 or ::/0 Cidr ranges with particular IPv4 or IPv6 values. 
+    '''
 sg_id = 'sg-09d0c55a2a08dcadb'
 
 offending_ingress_rules = flag_remote_access(sg_id)
