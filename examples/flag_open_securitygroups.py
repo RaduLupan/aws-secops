@@ -51,7 +51,7 @@ def flag_remote_access(groupId):
 def secure_remote_access(groupId):
     '''
     Description: Modifies the ingress security rules that allow remote access from anywhere by replacing the 0.0.0.0/0 or ::/0 Cidr ranges with particular IPv4 or IPv6 values. 
-    TODO: Introduce try-except logic.
+    Uses flag_remote_access() function to get the offending ingress rules.
     '''
     # Fake IP v4 to replace the 0.0.0.0/0 CIDR with in the offending rules.
     cidr_ip_v4 = '1.2.3.4/32'
@@ -59,16 +59,16 @@ def secure_remote_access(groupId):
     # Fake IP v6 to replace the ::/0 CIDR with in the offending rules.
     cidr_ip_v6 = '1234::/128'
 
-    security_group_rules = []
+    remediated_sg_rules = []
 
-    offending_ingress_rules = flag_remote_access(groupId)
+    offending_sg_rules = flag_remote_access(groupId)
 
-    if len(offending_ingress_rules) > 0:
+    if len(offending_sg_rules) > 0:
         
         # Replace the open CidrIpv4 and CidrIpv6 with corresponding fake IPs to secure the rule.
-        for rule in offending_ingress_rules:
+        for rule in offending_sg_rules:
             if 'CidrIpv4' in rule:
-                security_group_rules.append({
+                remediated_sg_rules.append({
                     'SecurityGroupRuleId': rule['SecurityGroupRuleId'], 
                     'SecurityGroupRule': {
                         'IpProtocol': rule['IpProtocol'],
@@ -79,7 +79,7 @@ def secure_remote_access(groupId):
                     }
                 })
             elif 'CidrIpv6' in rule:
-                security_group_rules.append({
+                remediated_sg_rules.append({
                     'SecurityGroupRuleId': rule['SecurityGroupRuleId'], 
                         'SecurityGroupRule': {
                         'IpProtocol': rule['IpProtocol'],
@@ -95,16 +95,24 @@ def secure_remote_access(groupId):
         ec2 = boto3.client('ec2')
 
         # Modify the offending rules.
-        response = ec2.modify_security_group_rules(GroupId = groupId,
-                                                   SecurityGroupRules = security_group_rules)
-        print(response)
+        try:
+            response = ec2.modify_security_group_rules(GroupId = groupId,
+                                                       SecurityGroupRules = remediated_sg_rules)
+            return remediated_sg_rules
+        except ClientError as err:
+            print("Error encountered while modifying the security group rules]: " + err.response['Error']['Code'] + ', Message: ' + str(err))
+            return []
     else:
-        print('No offending ingress rules found.')
-
+        # No offending ingress rules found.
+        return []
     
 
 
 sg_id = 'sg-09d0c55a2a08dcadb'
 
-secure_remote_access(groupId = sg_id)
+remediated_sg_rules = secure_remote_access(groupId = sg_id)
 
+if len(remediated_sg_rules) > 0:
+    print(f"The following security rules were remediated: {remediated_sg_rules}")
+else:
+    print("No offending ingress rules found.")
