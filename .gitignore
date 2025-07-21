@@ -128,5 +128,30 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# credentials.json
-credentials.json
+# AWS credentials and configuration
+.aws/
+aws-credentials.txt
+*.pem
+*.key
+
+# Generated reports
+sqs_security_audit_*.md
+security_audit_report.md
+focused_report.md
+*_report.md
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db 
